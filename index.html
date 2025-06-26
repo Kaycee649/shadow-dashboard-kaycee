@@ -43,60 +43,58 @@
     <div class="data">Estimated Earnings: <span id="estimate">$0.0000</span></div>
     <div class="data">Wallet Linked: <span id="wallet"></span></div>
     <button onclick="withdrawNow()">Withdraw Earnings</button>
+<script>
+  const firebaseConfig = {
+    databaseURL: "https://shadow-earnings-kaycee-default-rtdb.firebaseio.com/",
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
 
-    <script>
-      // 🔐 Firebase Config
-      const firebaseConfig = {
-        databaseURL: "https://shadow-earnings-kaycee-default-rtdb.firebaseio.com/",
-      };
-      firebase.initializeApp(firebaseConfig);
-      const db = firebase.database();
+  const wallet = "0xC9e80D2F3148a25692Cc48a61d87D8d04FfFd5B2";
+  const earningsPerPing = 0.0005;
 
-      const wallet = "0xC9e80D2F3148a25692Cc48a61d87D8d04FfFd5B2";
+  document.getElementById("wallet").innerText = wallet;
 
-      let totalHits = 0;
-      let totalAmount = 0;
-      const earningsPerPing = 0.0005;
+  // ✅ Real-time update for ALL visit changes
+  db.ref("visits").on("value", (snapshot) => {
+    const data = snapshot.val();
+    let totalHits = 0;
+    let totalAmount = 0;
 
-      document.getElementById("wallet").innerText = wallet;
+    for (let key in data) {
+      totalHits++;
+      totalAmount += data[key].amount || earningsPerPing;
+    }
 
-      // 🔁 Realtime listener
-      db.ref("visits").on("child_added", (snapshot) => {
-        const entry = snapshot.val();
-        totalHits++;
-        totalAmount += entry.amount || earningsPerPing;
+    document.getElementById("hits").innerText = totalHits;
+    document.getElementById("estimate").innerText = "$" + totalAmount.toFixed(4);
+  });
 
-        document.getElementById("hits").innerText = totalHits;
-        document.getElementById("estimate").innerText = "$" + totalAmount.toFixed(4);
+  // Log one visit on load
+  async function logRealVisit() {
+    try {
+      const res = await fetch("https://api.ipify.org?format=json");
+      const data = await res.json();
+      const ip = data.ip;
+      const now = new Date().toISOString();
+
+      await db.ref("visits").push({
+        ip: ip,
+        time: now,
+        amount: earningsPerPing,
+        wallet: wallet,
       });
+    } catch (e) {
+      console.error("IP logging error", e);
+    }
+  }
 
-      // 🔐 Log new visit (once per page load)
-      async function logRealVisit() {
-        try {
-          const res = await fetch("https://api.ipify.org?format=json");
-          const data = await res.json();
-          const ip = data.ip;
-          const now = new Date().toISOString();
+  function withdrawNow() {
+    alert("✅ Withdraw request sent!\n\nWallet: " + wallet);
+  }
 
-          await db.ref("visits").push({
-            ip: ip,
-            time: now,
-            amount: earningsPerPing,
-            wallet: wallet,
-          });
-        } catch (e) {
-          console.error("IP logging error", e);
-        }
-      }
-
-      // ⏬ Withdraw button
-      function withdrawNow() {
-        alert("✅ Withdraw request sent!\n\nWallet: " + wallet);
-        // You can expand this with actual logic later
-      }
-
-      // Run
-      logRealVisit();
-    </script>
+  logRealVisit();
+          </script>
+    
   </body>
 </html>
