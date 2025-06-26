@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Kaycee | Shadow Earnings</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      body {
+        font-family: sans-serif;
+        background: #111;
+        color: #0f0;
+        padding: 20px;
+        text-align: center;
+      }
+      h1 {
+        font-size: 24px;
+        margin-bottom: 10px;
+      }
+      .data {
+        font-size: 18px;
+        margin: 10px 0;
+      }
+    </style>
+    <script>
+      let hits = 0;
+      const wallet = "0xC9e80D2F3148a25692Cc48a61d87D8d04FfFd5B2";
+
+      function simulatePing() {
+        hits++;
+        document.getElementById("hits").innerText = hits;
+        document.getElementById("estimate").innerText = "$" + (hits * 0.0005).toFixed(4);
+        document.getElementById("wallet").innerText = wallet;
+      }
+
+      setInterval(simulatePing, 3000); // fake ping every 3 seconds
+    </script>
+  </head>
+  <body>
+    <h1>Shadow Dashboard</h1>
+    <div class="data">Total Ghost Pings: <span id="hits">0</span></div>
+    <div class="data">Estimated Earnings: <span id="estimate">$0.0000</span></div>
+    <div class="data">Wallet Linked: <span id="wallet"></span></div>
+    <p>🔒 This dashboard is updating live every 3 seconds</p>
+  </body>
+</html>
