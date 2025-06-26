@@ -1,71 +1,83 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Kaycee's Ghost Injector Dashboard 👻</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <title>Kaycee's Ghost Injector 💸</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
-      font-family: Arial, sans-serif;
       background: black;
       color: lime;
+      font-family: monospace;
       text-align: center;
-      padding-top: 100px;
+      padding-top: 80px;
     }
+
     h1 {
       font-size: 32px;
-      margin-bottom: 20px;
     }
+
     #ping-count {
-      font-size: 60px;
+      font-size: 72px;
       font-weight: bold;
+      margin: 30px 0;
     }
+
     .withdraw-btn {
-      background-color: lime;
-      color: black;
-      padding: 10px 20px;
+      padding: 15px 30px;
       font-size: 20px;
+      background: lime;
+      color: black;
       border: none;
       border-radius: 10px;
       cursor: pointer;
-      margin-top: 40px;
     }
   </style>
 </head>
 <body>
-  <h1>👑 Kaycee's Ghost Earnings</h1>
+
+  <h1>👑 Kaycee's Ghost Earnings Dashboard</h1>
   <p>Total Ghost Pings:</p>
   <div id="ping-count">0</div>
 
   <button class="withdraw-btn" onclick="sendWithdrawal()">Withdraw Earnings</button>
 
   <script type="module">
+    // ✅ Firebase SDK imports
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
     import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
 
+    // ✅ REPLACE THIS WITH YOUR REAL FIREBASE CONFIG
     const firebaseConfig = {
-      databaseURL: "https://shadow-earnings-kaycee-default-rtdb.firebaseio.com/"
-      // If you have apiKey, projectId etc, you can add them here (optional)
+      apiKey: "YOUR_REAL_API_KEY_HERE",
+      authDomain: "shadow-earnings-kaycee.firebaseapp.com",
+      databaseURL: "https://shadow-earnings-kaycee-default-rtdb.firebaseio.com",
+      projectId: "shadow-earnings-kaycee",
+      storageBucket: "shadow-earnings-kaycee.appspot.com",
+      messagingSenderId: "YOUR_MESSAGING_ID",
+      appId: "YOUR_APP_ID"
     };
 
+    // ✅ Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Real-time ping updates
+    // ✅ Real-time ping counter
     const pingRef = ref(db, "totalPings");
     onValue(pingRef, (snapshot) => {
       const pings = snapshot.val();
       document.getElementById("ping-count").innerText = pings || 0;
     });
 
-    // Withdrawal button function
-    function sendWithdrawal() {
+    // ✅ Withdraw button logic
+    window.sendWithdrawal = function () {
       const withdrawRef = ref(db, "withdrawals");
       push(withdrawRef, {
         requestTime: new Date().toISOString(),
         status: "pending"
       });
       alert("✅ Withdrawal request sent!");
-    }
+    };
   </script>
 </body>
 </html>
