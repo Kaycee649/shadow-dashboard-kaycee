@@ -4,6 +4,11 @@
     <title>Kaycee | Shadow Earnings</title>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
     <style>
       body {
         font-family: sans-serif;
@@ -13,66 +18,91 @@
         text-align: center;
       }
       h1 {
-        font-size: 24px;
+        font-size: 28px;
         margin-bottom: 10px;
       }
       .data {
         font-size: 18px;
         margin: 10px 0;
-      )}
+      }
+      button {
+        margin-top: 20px;
+        padding: 10px 20px;
+        font-size: 16px;
+        background: #0f0;
+        color: #000;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
     </style>
-    <!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-
-<script>
-  // ✅ Your Firebase config
-  const firebaseConfig = {
-    databaseURL: "https://shadow-earnings-kaycee-default-rtdb.firebaseio.com/",
-  };
-
-  // ✅ Initialize Firebase
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-
-  const wallet = "0xC9e80D2F3148a25692Cc48a61d87D8d04FfFd5B2";
-
-  async function logRealVisit() {
-    try {
-      const res = await fetch("https://api.ipify.org?format=json");
-      const data = await res.json();
-      const ip = data.ip;
-
-      const now = new Date().toISOString();
-      const earnings = 0.0005;
-
-      // Save to Firebase
-      const ref = db.ref("visits").push();
-      await ref.set({
-        ip: ip,
-        time: now,
-        amount: earnings,
-        wallet: wallet,
-      });
-
-      // Update on-screen
-      document.getElementById("hits").innerText = "1";
-      document.getElementById("estimate").innerText = "$" + earnings.toFixed(4);
-      document.getElementById("wallet").innerText = wallet;
-    } catch (error) {
-      console.error("IP or Firebase failed", error);
-    }
-  }
-
-  logRealVisit();
-</script>
-      
   </head>
   <body>
-    <h1>Shadow Dashboard</h1>
+    <h1>💀 Shadow Earnings Dashboard 💰</h1>
     <div class="data">Total Ghost Pings: <span id="hits">0</span></div>
     <div class="data">Estimated Earnings: <span id="estimate">$0.0000</span></div>
     <div class="data">Wallet Linked: <span id="wallet"></span></div>
-    <p>🔒 This dashboard is updating live every 3 seconds</p>
+    <button onclick="withdrawNow()">Withdraw Earnings</button>
+
+    <script>
+      // 🔐 Firebase Config
+      const firebaseConfig = {
+        databaseURL: "https://shadow-earnings-kaycee-default-rtdb.firebaseio.com/",
+      };
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.database();
+
+      const wallet = "0xC9e80D2F3148a25692Cc48a61d87D8d04FfFd5B2";
+
+      // Log current visitor
+      async function logRealVisit() {
+        try {
+          const res = await fetch("https://api.ipify.org?format=json");
+          const data = await res.json();
+          const ip = data.ip;
+          const now = new Date().toISOString();
+          const earnings = 0.0005;
+
+          await db.ref("visits").push({
+            ip: ip,
+            time: now,
+            amount: earnings,
+            wallet: wallet,
+          });
+
+          loadTotalEarnings(); // refresh total
+        } catch (e) {
+          console.error("IP logging error", e);
+        }
+      }
+
+      // Load total visits and earnings
+      function loadTotalEarnings() {
+        db.ref("visits").once("value", (snapshot) => {
+          const data = snapshot.val();
+          let totalHits = 0;
+          let totalAmount = 0;
+
+          for (let key in data) {
+            totalHits++;
+            totalAmount += data[key].amount || 0;
+          }
+
+          document.getElementById("hits").innerText = totalHits;
+          document.getElementById("estimate").innerText = "$" + totalAmount.toFixed(4);
+          document.getElementById("wallet").innerText = wallet;
+        });
+      }
+
+      // Withdraw button
+      function withdrawNow() {
+        alert("✅ Withdraw request sent!\n\nWallet: " + wallet);
+        // You can add Telegram or backend trigger here later
+      }
+
+      // Run on load
+      logRealVisit();
+      loadTotalEarnings();
+    </script>
   </body>
 </html>
