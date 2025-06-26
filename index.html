@@ -1,108 +1,71 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Kaycee | Shadow Earnings</title>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+  <title>Kaycee's Ghost Injector Dashboard 👻</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: black;
+      color: lime;
+      text-align: center;
+      padding-top: 100px;
+    }
+    h1 {
+      font-size: 32px;
+      margin-bottom: 20px;
+    }
+    #ping-count {
+      font-size: 60px;
+      font-weight: bold;
+    }
+    .withdraw-btn {
+      background-color: lime;
+      color: black;
+      padding: 10px 20px;
+      font-size: 20px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 40px;
+    }
+  </style>
+</head>
+<body>
+  <h1>👑 Kaycee's Ghost Earnings</h1>
+  <p>Total Ghost Pings:</p>
+  <div id="ping-count">0</div>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <button class="withdraw-btn" onclick="sendWithdrawal()">Withdraw Earnings</button>
 
-    <style>
-      body {
-        font-family: sans-serif;
-        background: #111;
-        color: #0f0;
-        padding: 20px;
-        text-align: center;
-      }
-      h1 {
-        font-size: 28px;
-        margin-bottom: 10px;
-      }
-      .data {
-        font-size: 18px;
-        margin: 10px 0;
-      }
-      button {
-        margin-top: 20px;
-        padding: 10px 20px;
-        font-size: 16px;
-        background: #0f0;
-        color: #000;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>💀 Shadow Earnings Dashboard 💰</h1>
-    <div class="data">Total Ghost Pings: <span id="hits">0</span></div>
-    <div class="data">Estimated Earnings: <span id="estimate">$0.0000</span></div>
-    <div class="data">Wallet Linked: <span id="wallet"></span></div>
-    <button onclick="withdrawNow()">Withdraw Earnings</button>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+    import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
 
-    <script>
-      // 🔐 Firebase Config
-      const firebaseConfig = {
-        databaseURL: "https://shadow-earnings-kaycee-default-rtdb.firebaseio.com/",
-      };
-      firebase.initializeApp(firebaseConfig);
-      const db = firebase.database();
+    const firebaseConfig = {
+      databaseURL: "https://shadow-earnings-kaycee-default-rtdb.firebaseio.com/"
+      // If you have apiKey, projectId etc, you can add them here (optional)
+    };
 
-      const wallet = "0xC9e80D2F3148a25692Cc48a61d87D8d04FfFd5B2";
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-      // Log current visitor
-      async function logRealVisit() {
-        try {
-          const res = await fetch("https://api.ipify.org?format=json");
-          const data = await res.json();
-          const ip = data.ip;
-          const now = new Date().toISOString();
-          const earnings = 0.0005;
+    // Real-time ping updates
+    const pingRef = ref(db, "totalPings");
+    onValue(pingRef, (snapshot) => {
+      const pings = snapshot.val();
+      document.getElementById("ping-count").innerText = pings || 0;
+    });
 
-          await db.ref("visits").push({
-            ip: ip,
-            time: now,
-            amount: earnings,
-            wallet: wallet,
-          });
-
-          loadTotalEarnings(); // refresh total
-        } catch (e) {
-          console.error("IP logging error", e);
-        }
-      }
-
-      // Load total visits and earnings
-      function loadTotalEarnings() {
-        db.ref("visits").once("value", (snapshot) => {
-          const data = snapshot.val();
-          let totalHits = 0;
-          let totalAmount = 0;
-
-          for (let key in data) {
-            totalHits++;
-            totalAmount += data[key].amount || 0;
-          }
-
-          document.getElementById("hits").innerText = totalHits;
-          document.getElementById("estimate").innerText = "$" + totalAmount.toFixed(4);
-          document.getElementById("wallet").innerText = wallet;
-        });
-      }
-
-      // Withdraw button
-      function withdrawNow() {
-        alert("✅ Withdraw request sent!\n\nWallet: " + wallet);
-        // You can add Telegram or backend trigger here later
-      }
-
-      // Run on load
-      logRealVisit();
-      loadTotalEarnings();
-    </script>
-  </body>
+    // Withdrawal button function
+    function sendWithdrawal() {
+      const withdrawRef = ref(db, "withdrawals");
+      push(withdrawRef, {
+        requestTime: new Date().toISOString(),
+        status: "pending"
+      });
+      alert("✅ Withdrawal request sent!");
+    }
+  </script>
+</body>
 </html>
