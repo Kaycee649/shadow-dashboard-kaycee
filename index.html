@@ -22,18 +22,26 @@
       }
     </style>
     <script>
-      let hits = 0;
-      const wallet = "0xC9e80D2F3148a25692Cc48a61d87D8d04FfFd5B2";
+  const wallet = "0xC9e80D2F3148a25692Cc48a61d87D8d04FfFd5B2";
+  let hits = 0;
 
-      function simulatePing() {
-        hits++;
-        document.getElementById("hits").innerText = hits;
-        document.getElementById("estimate").innerText = "$" + (hits * 0.0005).toFixed(4);
-        document.getElementById("wallet").innerText = wallet;
-      }
+  async function getRealVisitor() {
+    try {
+      const res = await fetch("https://api.ipify.org?format=json");
+      const data = await res.json();
+      const ip = data.ip;
+      console.log("Visitor IP:", ip);
+      hits++;
+      document.getElementById("hits").innerText = hits;
+      document.getElementById("estimate").innerText = "$" + (hits * 0.0005).toFixed(4);
+      document.getElementById("wallet").innerText = wallet;
+    } catch (error) {
+      console.error("IP Fetch Failed", error);
+    }
+  }
 
-      setInterval(simulatePing, 3000);
-    </script>
+  getRealVisitor(); // Run once when the page is loaded
+</script>
   </head>
   <body>
     <h1>Shadow Dashboard</h1>
