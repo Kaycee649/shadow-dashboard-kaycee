@@ -1,83 +1,102 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Kaycee's Ghost Injector 💸</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      background: black;
-      color: lime;
-      font-family: monospace;
-      text-align: center;
-      padding-top: 80px;
-    }
+<html>
+  <head>
+    <title>Kaycee | Shadow Earnings</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    h1 {
-      font-size: 32px;
-    }
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
-    #ping-count {
-      font-size: 72px;
-      font-weight: bold;
-      margin: 30px 0;
-    }
+    <style>
+      body {
+        font-family: sans-serif;
+        background: #111;
+        color: #0f0;
+        padding: 20px;
+        text-align: center;
+      }
+      h1 {
+        font-size: 28px;
+        margin-bottom: 10px;
+      }
+      .data {
+        font-size: 18px;
+        margin: 10px 0;
+      }
+      button {
+        margin-top: 20px;
+        padding: 10px 20px;
+        font-size: 16px;
+        background: #0f0;
+        color: #000;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>💀 Shadow Earnings Dashboard 💰</h1>
+    <div class="data">Total Ghost Pings: <span id="hits">0</span></div>
+    <div class="data">Estimated Earnings: <span id="estimate">$0.0000</span></div>
+    <div class="data">Wallet Linked: <span id="wallet"></span></div>
+    <button onclick="withdrawNow()">Withdraw Earnings</button>
 
-    .withdraw-btn {
-      padding: 15px 30px;
-      font-size: 20px;
-      background: lime;
-      color: black;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-    }
-  </style>
-</head>
-<body>
+    <script>
+      // 🔐 Firebase Config
+      const firebaseConfig = {
+        databaseURL: "https://shadow-earnings-kaycee-default-rtdb.firebaseio.com/",
+      };
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.database();
 
-  <h1>👑 Kaycee's Ghost Earnings Dashboard</h1>
-  <p>Total Ghost Pings:</p>
-  <div id="ping-count">0</div>
+      const wallet = "0xC9e80D2F3148a25692Cc48a61d87D8d04FfFd5B2";
 
-  <button class="withdraw-btn" onclick="sendWithdrawal()">Withdraw Earnings</button>
+      let totalHits = 0;
+      let totalAmount = 0;
+      const earningsPerPing = 0.0005;
 
-  <script type="module">
-    // ✅ Firebase SDK imports
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-    import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
+      document.getElementById("wallet").innerText = wallet;
 
-    // ✅ REPLACE THIS WITH YOUR REAL FIREBASE CONFIG
-    const firebaseConfig = {
-      apiKey: "YOUR_REAL_API_KEY_HERE",
-      authDomain: "shadow-earnings-kaycee.firebaseapp.com",
-      databaseURL: "https://shadow-earnings-kaycee-default-rtdb.firebaseio.com",
-      projectId: "shadow-earnings-kaycee",
-      storageBucket: "shadow-earnings-kaycee.appspot.com",
-      messagingSenderId: "YOUR_MESSAGING_ID",
-      appId: "YOUR_APP_ID"
-    };
+      // 🔁 Realtime listener
+      db.ref("visits").on("child_added", (snapshot) => {
+        const entry = snapshot.val();
+        totalHits++;
+        totalAmount += entry.amount || earningsPerPing;
 
-    // ✅ Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    // ✅ Real-time ping counter
-    const pingRef = ref(db, "totalPings");
-    onValue(pingRef, (snapshot) => {
-      const pings = snapshot.val();
-      document.getElementById("ping-count").innerText = pings || 0;
-    });
-
-    // ✅ Withdraw button logic
-    window.sendWithdrawal = function () {
-      const withdrawRef = ref(db, "withdrawals");
-      push(withdrawRef, {
-        requestTime: new Date().toISOString(),
-        status: "pending"
+        document.getElementById("hits").innerText = totalHits;
+        document.getElementById("estimate").innerText = "$" + totalAmount.toFixed(4);
       });
-      alert("✅ Withdrawal request sent!");
-    };
-  </script>
-</body>
+
+      // 🔐 Log new visit (once per page load)
+      async function logRealVisit() {
+        try {
+          const res = await fetch("https://api.ipify.org?format=json");
+          const data = await res.json();
+          const ip = data.ip;
+          const now = new Date().toISOString();
+
+          await db.ref("visits").push({
+            ip: ip,
+            time: now,
+            amount: earningsPerPing,
+            wallet: wallet,
+          });
+        } catch (e) {
+          console.error("IP logging error", e);
+        }
+      }
+
+      // ⏬ Withdraw button
+      function withdrawNow() {
+        alert("✅ Withdraw request sent!\n\nWallet: " + wallet);
+        // You can expand this with actual logic later
+      }
+
+      // Run
+      logRealVisit();
+    </script>
+  </body>
 </html>
